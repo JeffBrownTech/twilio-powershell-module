@@ -16,6 +16,9 @@ function Set-TwilioAccountSID {
     if ($null -ne $Script:TWILIO_AUTH_TOKEN) {
         Set-TwilioCredentials -SID $Script:TWILIO_ACCOUNT_SID -AuthToken $Script:TWILIO_AUTH_TOKEN
     }
+
+    # Set API URI
+    Set-TwilioApiUri -SID $SID
 }
 
 function Set-TwilioAuthToken {
@@ -48,6 +51,24 @@ function Set-TwilioCredentials {
 
     # Reference: https://www.twilio.com/docs/usage/tutorials/how-to-make-http-basic-request-twilio-powershell
     $Script:TWILIO_CREDS = New-Object System.Management.Automation.PSCredential($SID, ($AuthToken | ConvertTo-SecureString -AsPlainText -Force))
+}
+
+function Get-TwilioApiUri {
+    return $Script:TWILIO_API_URI
+}
+
+function Set-TwilioApiUri {
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $SID,
+
+        [Parameter()]
+        [string]
+        $ApiVersion = "2010-04-01"
+    )
+
+    $Script:TWILIO_API_URI = "https://api.twilio.com/$ApiVersion/Accounts/$SID"
 }
 
 function Get-TwilioPhoneNumber {
@@ -84,17 +105,21 @@ function Send-TwilioSMS {
     if ($PSBoundParameters.ContainsKey('FromPhoneNumber')) {
         $body = @{
             From = $FromPhoneNumber
-            To = $ToPhoneNumber
+            To   = $ToPhoneNumber
             Body = $Message
         }
     }
     else {
         $body = @{
             From = $Script:TWILIO_PHONE_NUMBER
-            To = $ToPhoneNumber
+            To   = $ToPhoneNumber
             Body = $Message
         }
     }    
     
-    Invoke-RestMethod -Method POST -Uri "https://api.twilio.com/2010-04-01/Accounts/$Script:TWILIO_ACCOUNT_SID/Messages.json" -Credential $Script:TWILIO_CREDS -Body $body
+    Invoke-RestMethod -Method POST -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Script:TWILIO_CREDS -Body $body
+}
+
+function Get-TwilioSMSHistory {
+    Invoke-RestMethod -Method GET -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Script:TWILIO_CREDS
 }
