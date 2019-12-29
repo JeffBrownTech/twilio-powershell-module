@@ -53,6 +53,10 @@ function Set-TwilioCredentials {
     $Script:TWILIO_CREDS = New-Object System.Management.Automation.PSCredential($SID, ($AuthToken | ConvertTo-SecureString -AsPlainText -Force))
 }
 
+function Set-TwilioCredentials2 {
+    $Script:TWILIO_CREDS2 = Get-Credential -Message "User name = Account SID, Password = Auth Token"
+}
+
 function Get-TwilioApiUri {
     return $Script:TWILIO_API_URI
 }
@@ -121,5 +125,17 @@ function Send-TwilioSMS {
 }
 
 function Get-TwilioSMSHistory {
-    Invoke-RestMethod -Method GET -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Script:TWILIO_CREDS
+    Invoke-RestMethod -Method GET -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Script:TWILIO_CREDS2
+}
+
+#https://lookups.twilio.com/v1/PhoneNumbers/{number}
+
+function Search-TwilioPhoneNumber {
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $PhoneNumber
+    )
+
+    Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$PhoneNumber" -Credential $Script:TWILIO_CREDS
 }
