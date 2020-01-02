@@ -66,22 +66,32 @@ function Send-TwilioSMS {
         $Credential = $Script:TWILIO_CREDS
     )
 
-    if ($PSBoundParameters.ContainsKey('FromPhoneNumber')) {
-        $body = @{
-            From = $FromPhoneNumber
-            To   = $ToPhoneNumber
-            Body = $Message
-        }
+    if ($NULL -eq $Script:TWILIO_API_URI) {
+        Write-Error -Message "The Twilio API URI has not been configured with the Account SID. Please run Set-TwilioApiUri with the Account SID before running this command again."
+        BREAK
+    }
+    elseif ($NULL -eq $Script:TWILIO_PHONE_NUMBER) {
+        Write-Error -Message "The Twilio Account Phone Number has not been specified. Use the Set-TwilioAccountPhoneNumber cmdlet or use the -FromPhoneNumber parameter with Send-TwilioSMS cmdlet to specify the Twilio account phone number."
+        BREAK
     }
     else {
-        $body = @{
-            From = $Script:TWILIO_PHONE_NUMBER
-            To   = $ToPhoneNumber
-            Body = $Message
+        if ($PSBoundParameters.ContainsKey('FromPhoneNumber')) {
+            $body = @{
+                From = $FromPhoneNumber
+                To   = $ToPhoneNumber
+                Body = $Message
+            }
         }
-    }    
-    
-    Invoke-RestMethod -Method POST -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Credential -Body $body
+        else {
+            $body = @{
+                From = $Script:TWILIO_PHONE_NUMBER
+                To   = $ToPhoneNumber
+                Body = $Message
+            }
+        }    
+        
+        Invoke-RestMethod -Method POST -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Credential -Body $body
+    }
 }
 
 function Get-TwilioSMSHistory {
