@@ -46,6 +46,12 @@ function Set-TwilioAccountPhoneNumber {
         $PhoneNumber
     )
 
+    try {
+        Search-TwilioPhoneNumber -PhoneNumber $PhoneNumber -NumberVerification -ErrorAction STOP | Out-Null
+    }
+    catch {
+        Write-Error -Message "An error occurred while verifying the phone number: $($Error[0].ErrorDetails.Message)"
+    }
     $Script:TWILIO_PHONE_NUMBER = $PhoneNumber
 }
 
@@ -69,7 +75,7 @@ function Send-TwilioSMS {
         $Credential = $Script:TWILIO_CREDS
     )
 
-    if ($Null -eq $Script:TWILIO_CREDS) {
+    if ($Null -eq $Credential) {
         Write-Error -Message "The Twilio API credentials have not been configured. Please run Connect-TwilioApi and use the account SID and Auth Token to configure credentials."
     }
     elseif ($NULL -eq $Script:TWILIO_API_URI) {
@@ -133,7 +139,7 @@ function Search-TwilioPhoneNumber {
     )
     # Reference: https://www.twilio.com/docs/lookup/api?code-sample=code-carrier-lookup-with-e164-formatted-number&code-language=curl&code-sdk-version=json
 
-    if ($Null -eq $Script:TWILIO_CREDS) {
+    if ($Null -eq $Credential) {
         Write-Error -Message "The Twilio API credentials have not been configured. Please run Connect-TwilioApi and use the account SID and Auth Token to configure credentials."
     }
     elseif ($PSBoundParameters.ContainsKey("CarrierLookup")) {
