@@ -1,4 +1,4 @@
-function Connect-TwilioApi {
+function Connect-TwilioService {
     param(
         [Parameter()]
         [PSCredential]
@@ -13,11 +13,11 @@ function Connect-TwilioApi {
     }
 
     Set-TwilioApiUri -SID $Script:TWILIO_CREDS.UserName
-}
+} # End of Connect-TwilioService
 
 function Get-TwilioApiUri {
     return $Script:TWILIO_API_URI
-}
+} # End of Get-TwilioApiUri
 
 function Set-TwilioApiUri {
     param(
@@ -31,11 +31,17 @@ function Set-TwilioApiUri {
     )
 
     $Script:TWILIO_API_URI = "https://api.twilio.com/$ApiVersion/Accounts/$SID"
-}
+} # End of Set-TwilioApiUri
 
 function Get-TwilioAccountPhoneNumber {
-    return $Script:TWILIO_PHONE_NUMBER
-}
+    if ($null -ne $Script:TWILIO_PHONE_NUMBER) {
+        return $Script:TWILIO_PHONE_NUMBER
+    }
+    else {
+        return "Twilio Account Phone Number not set. Run Set-TwilioAccountPhoneNumber to configure the sending phone number for your Twilio account."
+    }
+    
+} # End of Get-TwilioAccountPhoneNumber
 
 function Set-TwilioAccountPhoneNumber {
     [CmdletBinding()]
@@ -47,11 +53,12 @@ function Set-TwilioAccountPhoneNumber {
     )
 
     try {
-        Search-TwilioPhoneNumber -PhoneNumber $PhoneNumber -NumberVerification -ErrorAction STOP | Out-Null
+        Search-TwilioPhoneNumber -PhoneNumber $PhoneNumber -VerifyNumber -ErrorAction STOP | Out-Null
     }
     catch {
         Write-Error -Message "An error occurred while verifying the phone number: $($Error[0].ErrorDetails.Message)"
     }
+    
     $Script:TWILIO_PHONE_NUMBER = $PhoneNumber
 }
 
@@ -62,13 +69,13 @@ function Send-TwilioSMS {
         [string]
         $ToPhoneNumber,
 
-        [Parameter()]
-        [string]
-        $FromPhoneNumber = $Script:TWILIO_PHONE_NUMBER,
-
         [Parameter(Mandatory)]
         [string]
         $Message,
+
+        [Parameter()]
+        [string]
+        $FromPhoneNumber = $Script:TWILIO_PHONE_NUMBER,        
 
         [Parameter()]
         [PSCredential]
@@ -76,12 +83,12 @@ function Send-TwilioSMS {
     )
 
     if ($Null -eq $Credential) {
-        Write-Error -Message "The Twilio API credentials have not been configured. Please run Connect-TwilioApi and use the account SID and Auth Token to configure credentials."
+        Write-Error -Message "The Twilio API credentials have not been configured. Please run Connect-TwilioService and use the account SID and Auth Token to configure credentials."
     }
     elseif ($NULL -eq $Script:TWILIO_API_URI) {
         Write-Error -Message "The Twilio API URI has not been configured with the Account SID. Please run Set-TwilioApiUri with the Account SID before running this command again."
     }
-    elseif ($NULL -eq $Script:TWILIO_PHONE_NUMBER) {
+    elseif ($NULL -eq $FromPhoneNumber) {
         Write-Error -Message "The Twilio Account Phone Number has not been specified. Use the Set-TwilioAccountPhoneNumber cmdlet or use the -FromPhoneNumber parameter to specify the Twilio account phone number."
     }
     else {
@@ -123,15 +130,15 @@ function Search-TwilioPhoneNumber {
 
         [Parameter(ParameterSetName="verify")]
         [switch]
-        $NumberVerification,
+        $VerifyNumber,
 
         [Parameter(ParameterSetName="carrier")]
         [switch]
-        $CarrierLookup,
+        $LookupCarrier,
 
         [Parameter(ParameterSetName="caller")]
         [switch]
-        $CallerLookup,
+        $LookupCaller,
         
         [Parameter()]
         [PSCredential]
@@ -140,15 +147,13 @@ function Search-TwilioPhoneNumber {
     # Reference: https://www.twilio.com/docs/lookup/api?code-sample=code-carrier-lookup-with-e164-formatted-number&code-language=curl&code-sdk-version=json
 
     if ($Null -eq $Credential) {
-        Write-Error -Message "The Twilio API credentials have not been configured. Please run Connect-TwilioApi and use the account SID and Auth Token to configure credentials."
+        Write-Error -Message "The Twilio API credentials have not been configured. Please run Connect-TwilioService and use the account SID and Auth Token to configure credentials."
     }
-    elseif ($PSBoundParameters.ContainsKey("CarrierLookup")) {
-        Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=carrier" -Credential $Credential
-    }
-    elseif ($PSBoundParameters.ContainsKey("CallerLookup")) {
-        Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=caller-name" -Credential $Credential
-    }
-    elseif ($PSBoundParameters.ContainsKey("NumberVerification")) {
-        Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$PhoneNumber" -Credential $Credential
+    else {
+        switch ($PSBoundParameters) {
+            {$_.Keys -eq "VerifyNumber"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$PhoneNumber" -Credential $Credential; break }
+            {$_.Keys -eq "LookupCarrier"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=carrier" -Credential $Credential; break }
+            {$_.Keys -eq "LookupCaller"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=caller-name" -Credential $Credential; break }
+        }
     }
 }
