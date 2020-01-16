@@ -287,14 +287,45 @@ function Get-TwilioPhoneNumberInformation {
     Returns information about a phone number using Twilio lookup service.
 
     .DESCRIPTION
-    This cmdlet returns information about a phone number passed to it. There are three options:
-    1. Verify number
-    2. Lookup carrier information
-    3. Lookup caller ID
+    This cmdlet returns information about a phone number in JSON. There are three options:
+    
+    1. Verify number (-VerifyNumber)
+    2. Lookup carrier information (-LookupCarrier)
+    3. Lookup owner (-LookupCallerID)
+
+    Each option is made available through switch parameters as part of parameter sets, meaning only only lookup option can be specified each time the command is ran.
 
     .PARAMETER PhoneNumber
-
+    This is the phone number in to verify in E.164 format.
     This is a required parameter.
+
+    .PARAMETER VerifyNumber
+    This switch parameter confirms the phone number is valid.
+
+    .PARAMETER LookupCarrier
+    This switch parameter returns information such as the carrier name and phone number type (landline, mobile, or voip).
+
+    .PARAMETER LookupCallerID
+    This switch paramter performs a lookup on the phone number and returns the name of the individual or business associated with it.
+    Only available for U.S. numbers.
+
+    .PARAMETER Credential
+    If the API URI credentials have not been specified using the Connect-TwilioService cmdlet, you can specify them here with a PSCredential object.
+
+    .EXAMPLE
+    PS C:\> Get-TwilioPhoneNumberInformation -PhoneNumber +15551234567 -VerifyNumber
+
+    This example verifies the supplied phone number is a valid phone number.
+
+    .EXAMPLE
+    PS C:\> Get-TwilioPhoneNumberInformation -PhoneNumber +15551234567 -LookupCarrier
+
+    This example returns information for the supplied phone number, such as landline, mobile, or voip and the mobile carrier name.
+
+    .EXAMPLE
+    PS C:\> Get-TwilioPhoneNumberInformation -PhoneNumber +15551234567 -LookupCallerID
+
+    This example returns the name of the individual or business associated with the phone number. 
     #>
 
     [CmdletBinding()]
@@ -314,7 +345,7 @@ function Get-TwilioPhoneNumberInformation {
 
         [Parameter(ParameterSetName="caller")]
         [switch]
-        $LookupCaller,
+        $LookupCallerID,
         
         [Parameter()]
         [PSCredential]
@@ -330,7 +361,7 @@ function Get-TwilioPhoneNumberInformation {
         switch ($PSBoundParameters) {
             {$_.Keys -eq "VerifyNumber"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$PhoneNumber" -Credential $Credential; break }
             {$_.Keys -eq "LookupCarrier"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=carrier" -Credential $Credential; break }
-            {$_.Keys -eq "LookupCaller"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=caller-name" -Credential $Credential; break }
+            {$_.Keys -eq "LookupCallerID"} { Invoke-RestMethod -Method GET -Uri "https://lookups.twilio.com/v1/PhoneNumbers/$($PhoneNumber)?Type=caller-name" -Credential $Credential; break }
         }
     }
 }
