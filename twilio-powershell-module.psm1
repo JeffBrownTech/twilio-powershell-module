@@ -45,10 +45,10 @@ function Connect-TwilioService {
 
     Set-TwilioApiUri -SID $Script:TWILIO_CREDS.UserName
     
-    Test-TwilioCredentials -Credential $Script:TWILIO_CREDS
-    
-    if ($PSBoundParameters.ContainsKey('PhoneNumber')) {
-        Set-TwilioAccountPhoneNumber -PhoneNumber $PhoneNumber        
+    If ((Test-TwilioCredentials -Credential $Script:TWILIO_CREDS) -eq $true) {
+        if ($PSBoundParameters.ContainsKey('PhoneNumber')) {
+            Set-TwilioAccountPhoneNumber -PhoneNumber $PhoneNumber        
+        }
     }
 } # End of Connect-TwilioService
 
@@ -59,14 +59,17 @@ function Test-TwilioCredentials {
         $Credential
     )
     
+    $validCreds = $true
+
     try {
         Invoke-RestMethod -Method GET -Uri $Script:TWILIO_API_URI -Credential $Credential | Out-Null
     }
     catch {
-        Write-Error -Message "Verifying the Twilio credentials returned an error: $($Error[0].Exception)."
+        Write-Error -Message "Error validating Twilio credentials. Verify the correct Account SID and Auth Token are being used."
+        $validCreds = $false
     }
 
-    Write-Verbose -Message "Twilio Account SID and Auto Token tested successfully."
+    return $validCreds
 }
 
 function Get-TwilioApiUri {
