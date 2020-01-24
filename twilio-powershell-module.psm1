@@ -7,19 +7,28 @@ function Connect-TwilioService {
     Configures Twilio API credentials (Account SID and Auth Token) and set thes API URI with the Account SID.
     This requires a Twilio account with a configured Account SID and Auth Token.
 
+    .PARAMETER PhoneNumber
+    Allows option to set the Twilio account phone number for sending SMS messages. Must be in E.164 format and a valid telephone number.
+    This parameter is optional; however, if omitted, requires running Set-TwilioAccountPhoneNumber.
+
     .PARAMETER Credential
     Takes a PSCredential object saved in a PowerShell variable. This is the Account SID and Auth Token for your Twilio account.
 
     .EXAMPLE
     PS C:\> Connect-TwilioService
 
-    This command will prompt for the Account SID and Auth Token to configure the API connection.
+    This example will prompt for the Account SID and Auth Token to configure the API connection.
 
     .EXAMPLE
     $creds = Get-Credential
     PS C:\> Connect-TwilioService -Credential $creds
 
     This example saves the Account SID and Auth Token to a PowerShell variable and then configures the API connection.
+
+    .EXAMPLE
+    PS C:\> Connect-TwilioService -PhoneNumber +15551234567
+
+    This example will set the from phone number to +15551234567 and prompt for the Account SID and Auth Token to configure the API connection.
 
     .LINK
     https://www.twilio.com/docs/iam/credentials/api#authentication
@@ -53,6 +62,24 @@ function Connect-TwilioService {
 } # End of Connect-TwilioService
 
 function Test-TwilioCredentials {
+    <#
+    .SYNOPSIS
+    Tests that the Account SID and Auth Token are valid.
+
+    .DESCRIPTION
+    Takes a PSCredential object and verifies the Account SID and Auth Token are valid by making a simple GET request against the Twilio API URI.
+    This function is called from the Connect-TwilioService cmdlet to verify the credentials are valid.
+
+    .PARAMETER Credential
+    Takes a PSCredential object saved in a PowerShell variable. This is the Account SID and Auth Token for your Twilio account.
+
+    .EXAMPLE
+    $creds = Get-Credential
+    PS C:\> Test-TwilioCredentials -Credential $creds
+
+    This example prompts for and saves the Account SID and Auth Token to a PowerShell variable and then verifies they are valid.
+    #>
+    
     param(
         [Parameter(Mandatory)]
         [PSCredential]
