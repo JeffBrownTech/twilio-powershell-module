@@ -1,5 +1,5 @@
 # twilio-powershell-module
-This is a PowerShell module that utilizes Twilio's API for different functions. This requires a Twilio account to run most of the commands. To get started with a free trial to configure an Account SID, Auth Toke, and Phone Number, check out the link below:
+This is a PowerShell module that utilizes Twilio's API for different functions. This requires a Twilio account to run most of the commands. To get started with a free trial to configure an Account SID, Auth Token, and Phone Number, check out the link below:
 
 [How to Use Your Free Trial Account](https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account)
 
