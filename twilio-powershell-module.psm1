@@ -6,6 +6,7 @@ function Connect-TwilioService {
     .DESCRIPTION
     Configures Twilio API credentials (Account SID and Auth Token) and set thes API URI with the Account SID.
     This requires a Twilio account with a configured Account SID and Auth Token.
+    Can also optionally set the Twilio account phone number for sending SMS messages.
 
     .PARAMETER PhoneNumber
     Allows option to set the Twilio account phone number for sending SMS messages. Must be in E.164 format and a valid telephone number.
@@ -79,7 +80,7 @@ function Test-TwilioCredentials {
 
     This example prompts for and saves the Account SID and Auth Token to a PowerShell variable and then verifies they are valid.
     #>
-    
+
     param(
         [Parameter(Mandatory)]
         [PSCredential]
@@ -164,6 +165,19 @@ function Set-TwilioApiUri {
 } # End of Set-TwilioApiUri
 
 function Get-TwilioAccountPhoneNumber {
+    <#
+    .SYNOPSIS
+    Returns the Twilio Account Phone Number if it has been configured.
+    
+    .DESCRIPTION
+    Returns the Twilio Account Phone Number if it has been configured.
+    This command does not require any named parameters.
+
+    .EXAMPLE
+    PS C:/> Get-TwilioAccountPhoneNumber
+
+    This example will return the Twilio Account Phone Number (if configured) or prompt to run Set-TwilioAccountPhoneNumber if it has not been configure.
+    #>
     if ($null -ne $Script:TWILIO_PHONE_NUMBER) {
         return $Script:TWILIO_PHONE_NUMBER
     }
