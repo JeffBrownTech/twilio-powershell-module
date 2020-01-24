@@ -27,6 +27,11 @@ function Connect-TwilioService {
 
     param(
         [Parameter()]
+        [ValidatePattern("^\+[1-9]\d{1,14}$")]  # Regex taken from: https://www.twilio.com/docs/glossary/what-e164
+        [string]
+        $PhoneNumber,
+
+        [Parameter()]
         [PSCredential]
         $Credential
     )
@@ -35,11 +40,34 @@ function Connect-TwilioService {
         $Script:TWILIO_CREDS = $Credential
     }
     else {
-        $Script:TWILIO_CREDS = Get-Credential -Message "User name = Account SID, Password = Auth Token"
+        $Script:TWILIO_CREDS = Get-Credential -Message "User name = Account SID, Password = Auth Token"        
     }
 
     Set-TwilioApiUri -SID $Script:TWILIO_CREDS.UserName
+    
+    Test-TwilioCredentials -Credential $Script:TWILIO_CREDS
+    
+    if ($PSBoundParameters.ContainsKey('PhoneNumber')) {
+        Set-TwilioAccountPhoneNumber -PhoneNumber $PhoneNumber        
+    }
 } # End of Connect-TwilioService
+
+function Test-TwilioCredentials {
+    param(
+        [Parameter(Mandatory)]
+        [PSCredential]
+        $Credential
+    )
+    
+    try {
+        Invoke-RestMethod -Method GET -Uri $Script:TWILIO_API_URI -Credential $Credential | Out-Null
+    }
+    catch {
+        Write-Error -Message "Verifying the Twilio credentials returned an error: $($Error[0].Exception)."
+    }
+
+    Write-Verbose -Message "Twilio Account SID and Auto Token tested successfully."
+}
 
 function Get-TwilioApiUri {
     <#
@@ -366,5 +394,5 @@ function Get-TwilioPhoneNumberInformation {
     }
 }
 
-Export-ModuleMember -Function Connect-TwilioService, Get-TwilioApiUri, Set-TwilioApiUri, Get-TwilioAccountPhoneNumber, Set-TwilioAccountPhoneNumber, `
+Export-ModuleMember -Function Connect-TwilioService, Test-TwilioCredentials, Get-TwilioApiUri, Set-TwilioApiUri, Get-TwilioAccountPhoneNumber, Set-TwilioAccountPhoneNumber, `
                                 Send-TwilioSMS, Get-TwilioSMSHistory, Get-TwilioPhoneNumberInformation
