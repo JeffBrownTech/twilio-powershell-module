@@ -447,5 +447,5 @@ function Get-TwilioPhoneNumberInformation {
     }
 }
 
-Export-ModuleMember -Function Connect-TwilioService, Test-TwilioCredentials, Get-TwilioApiUri, Set-TwilioApiUri, Get-TwilioAccountPhoneNumber, Set-TwilioAccountPhoneNumber, `
-                                Send-TwilioSMS, Get-TwilioSMSHistory, Get-TwilioPhoneNumberInformation
+#Export-ModuleMember -Function Connect-TwilioService, Test-TwilioCredentials, Get-TwilioApiUri, Set-TwilioApiUri, Get-TwilioAccountPhoneNumber, Set-TwilioAccountPhoneNumber, `
+#                                Send-TwilioSMS, Get-TwilioSMSHistory, Get-TwilioPhoneNumberInformation
