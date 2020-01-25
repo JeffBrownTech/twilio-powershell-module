@@ -35,6 +35,7 @@ function Connect-TwilioService {
     https://www.twilio.com/docs/iam/credentials/api#authentication
     #>
 
+    [CmdletBinding()]
     param(
         [Parameter()]
         [ValidatePattern("^\+[1-9]\d{1,14}$")]  # Regex taken from: https://www.twilio.com/docs/glossary/what-e164
@@ -45,19 +46,19 @@ function Connect-TwilioService {
         [PSCredential]
         $Credential
     )
-    
+
     if ($PSBoundParameters.ContainsKey('Credential')) {
         $Script:TWILIO_CREDS = $Credential
     }
     else {
-        $Script:TWILIO_CREDS = Get-Credential -Message "User name = Account SID, Password = Auth Token"        
+        $Script:TWILIO_CREDS = Get-Credential -Message "User name = Account SID, Password = Auth Token"
     }
 
     Set-TwilioApiUri -SID $Script:TWILIO_CREDS.UserName
-    
-    If ((Test-TwilioCredentials -Credential $Script:TWILIO_CREDS) -eq $true) {
+ 
+    if ((Test-TwilioCredentials -Credential $Script:TWILIO_CREDS) -eq $true) {
         if ($PSBoundParameters.ContainsKey('PhoneNumber')) {
-            Set-TwilioAccountPhoneNumber -PhoneNumber $PhoneNumber        
+            Set-TwilioAccountPhoneNumber -PhoneNumber $PhoneNumber
         }
     }
 } # End of Connect-TwilioService
@@ -81,12 +82,13 @@ function Test-TwilioCredentials {
     This example prompts for and saves the Account SID and Auth Token to a PowerShell variable and then verifies they are valid.
     #>
 
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [PSCredential]
         $Credential
     )
-    
+ 
     $validCreds = $true
 
     try {
@@ -117,6 +119,9 @@ function Get-TwilioApiUri {
     .LINK
     https://www.twilio.com/docs/iam/credentials/api#api-base-url
     #>
+
+    [CmdletBinding()]
+    param()
 
     return $Script:TWILIO_API_URI
 } # End of Get-TwilioApiUri
@@ -151,6 +156,7 @@ function Set-TwilioApiUri {
     https://api.twilio.com/<API_Version>/Accounts/<Account_SID>
     #>
 
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]
@@ -168,7 +174,7 @@ function Get-TwilioAccountPhoneNumber {
     <#
     .SYNOPSIS
     Returns the Twilio Account Phone Number if it has been configured.
-    
+
     .DESCRIPTION
     Returns the Twilio Account Phone Number if it has been configured.
     This command does not require any named parameters.
@@ -178,13 +184,16 @@ function Get-TwilioAccountPhoneNumber {
 
     This example will return the Twilio Account Phone Number (if configured) or prompt to run Set-TwilioAccountPhoneNumber if it has not been configure.
     #>
+
+    [CmdletBinding()]
+    param()
+
     if ($null -ne $Script:TWILIO_PHONE_NUMBER) {
         return $Script:TWILIO_PHONE_NUMBER
     }
     else {
         return "Twilio Account Phone Number not set. Run Set-TwilioAccountPhoneNumber to configure the sending phone number for your Twilio account."
     }
-    
 } # End of Get-TwilioAccountPhoneNumber
 
 function Set-TwilioAccountPhoneNumber {
@@ -207,7 +216,7 @@ function Set-TwilioAccountPhoneNumber {
     .LINK
     https://www.twilio.com/docs/sms/tutorials/send-sms-during-phone-call-ruby#sign-up-for-a-twilio-account-and-get-a-phone-number
     #>
-    
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -222,7 +231,7 @@ function Set-TwilioAccountPhoneNumber {
     catch {
         Write-Error -Message "An error occurred while verifying the phone number: $($Error[0].ErrorDetails.Message)"
     }
-    
+
     $Script:TWILIO_PHONE_NUMBER = $PhoneNumber
 }
 
@@ -282,7 +291,7 @@ function Send-TwilioSMS {
         [Parameter()]
         [string]
         [ValidatePattern("^\+[1-9]\d{1,14}$")]  # Regex taken from: https://www.twilio.com/docs/glossary/what-e164
-        $FromPhoneNumber = $Script:TWILIO_PHONE_NUMBER,        
+        $FromPhoneNumber = $Script:TWILIO_PHONE_NUMBER,
 
         [Parameter()]
         [PSCredential]
@@ -312,7 +321,7 @@ function Send-TwilioSMS {
                 To   = $ToPhoneNumber
                 Body = $Message
             }
-        }    
+        }
         
         Invoke-RestMethod -Method POST -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Credential -Body $body
     }
@@ -360,7 +369,7 @@ function Get-TwilioPhoneNumberInformation {
 
     .DESCRIPTION
     This cmdlet returns information about a phone number in JSON. There are three options:
-    
+
     1. Verify number (-VerifyNumber)
     2. Lookup carrier information (-LookupCarrier)
     3. Lookup owner (-LookupCallerID)
@@ -397,7 +406,7 @@ function Get-TwilioPhoneNumberInformation {
     .EXAMPLE
     PS C:\> Get-TwilioPhoneNumberInformation -PhoneNumber +15551234567 -LookupCallerID
 
-    This example returns the name of the individual or business associated with the phone number. 
+    This example returns the name of the individual or business associated with the phone number.
     #>
 
     [CmdletBinding()]
