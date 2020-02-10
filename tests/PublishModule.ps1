@@ -1,1 +1,1 @@
-Publish-Module -Path C:\Projects\twilio-powershell-module\ -NuGetApiKey $(PowerShellGalleryAPI) -WhatIf -Verbose -ErrorAction STOP
+Publish-Module -Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY -NuGetApiKey $env:PowerShellGalleryAPI -WhatIf -Verbose -ErrorAction STOP
