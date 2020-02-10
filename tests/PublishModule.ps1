@@ -1,1 +1,2 @@
-Publish-Module -Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY -NuGetApiKey $env:PowerShellGalleryAPI -WhatIf -Verbose -ErrorAction STOP
+Write-Host $env:SYSTEM_DEFAULTWORKINGDIRECTORY
+Publish-Module -Path .\ -NuGetApiKey $env:PowerShellGalleryAPI -WhatIf -Verbose -ErrorAction STOP
