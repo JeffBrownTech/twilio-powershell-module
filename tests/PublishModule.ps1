@@ -1,2 +1,1 @@
-Write-Host $env:SYSTEM_DEFAULTWORKINGDIRECTORY
-Publish-Module -Path .\ -NuGetApiKey $env:PowerShellGalleryAPI -WhatIf -Verbose -ErrorAction STOP
+Publish-Module -Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY\twilio-powershell-module -NuGetApiKey $env:PowerShellGalleryAPI -WhatIf -Verbose -ErrorAction STOP
