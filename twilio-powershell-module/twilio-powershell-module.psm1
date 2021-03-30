@@ -249,7 +249,7 @@ function Send-TwilioSMS {
 
     .PARAMETER Message
     This is the text body of the SMS message.
-    Thi sis a required parameter.
+    This is a required parameter.
 
     .PARAMETER FromPhoneNumber
     This is the sending phone number configured in your Twilio account. If the phone number hasn't been configured using the Set-TwilioAccountPhoneNumber, this parameter should be used.
@@ -257,6 +257,10 @@ function Send-TwilioSMS {
     .PARAMETER Credential
     If the API URI credentials have not been specified using the Connect-TwilioService cmdlet, you can specify them here with a PSCredential object.
 
+    .PARAMETER StatusCallBack
+    This is the endpoint that Twilio should use when posting status information back from your message.
+    This is an optional parameter
+    
     .EXAMPLE
     PS C:\> Send-TwilioSMS -ToPhoneNumber +15551234567 -Message "Hello World!"
 
@@ -295,7 +299,11 @@ function Send-TwilioSMS {
 
         [Parameter()]
         [PSCredential]
-        $Credential = $Script:TWILIO_CREDS
+        $Credential = $Script:TWILIO_CREDS,
+
+        [Parameter()]
+        [string]
+        $StatusCallback
     )
 
     if ($Null -eq $Credential) {
@@ -321,6 +329,10 @@ function Send-TwilioSMS {
                 To   = $ToPhoneNumber
                 Body = $Message
             }
+        }
+
+        if ($PSBoundParameters.ContainsKey('StatusCallback')){
+            $body += @{ StatusCallback = $StatusCallback }
         }
         
         Invoke-RestMethod -Method POST -Uri "$Script:TWILIO_API_URI/Messages.json" -Credential $Credential -Body $body
