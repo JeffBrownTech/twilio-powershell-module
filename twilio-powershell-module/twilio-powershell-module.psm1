@@ -15,6 +15,9 @@ function Connect-TwilioService {
     .PARAMETER Credential
     Takes a PSCredential object saved in a PowerShell variable. This is the Account SID and Auth Token for your Twilio account.
 
+    .PARAMETER SID
+    A twilio credential can be composed of an API Id and token or a SID and a token; if your credential uses an API ID, enter your account's SID here
+    
     .EXAMPLE
     PS C:\> Connect-TwilioService
 
@@ -44,7 +47,11 @@ function Connect-TwilioService {
 
         [Parameter()]
         [PSCredential]
-        $Credential
+        $Credential,
+
+        [Parameter()]
+        [string]
+        $SID
     )
 
     if ($PSBoundParameters.ContainsKey('Credential')) {
@@ -54,7 +61,12 @@ function Connect-TwilioService {
         $Script:TWILIO_CREDS = Get-Credential -Message "User name = Account SID, Password = Auth Token"
     }
 
-    Set-TwilioApiUri -SID $Script:TWILIO_CREDS.UserName
+    if ($PSBoundParameters.ContainsKey('SID')) {
+        Set-TwilioApiUri -SID $SID
+    } else
+    {
+        Set-TwilioApiUri -SID $Script:TWILIO_CREDS.UserName
+    }
  
     if ((Test-TwilioCredentials -Credential $Script:TWILIO_CREDS) -eq $true) {
         if ($PSBoundParameters.ContainsKey('PhoneNumber')) {
@@ -90,9 +102,10 @@ function Test-TwilioCredentials {
     )
  
     $validCreds = $true
+    $uri = "$Script:TWILIO_API_URI/Usage/Records/LastMonth.json"
 
     try {
-        Invoke-RestMethod -Method GET -Uri $Script:TWILIO_API_URI -Credential $Credential | Out-Null
+        Invoke-RestMethod -Method GET -Uri $uri -Credential $Credential | Out-Null
     }
     catch {
         Write-Error -Message "Error validating Twilio credentials. Verify the correct Account SID and Auth Token are being used."
